@@ -19,6 +19,6 @@ module.exports = function(sequelize, DataTypes) {
   return Game
 }
 
-// Game.sync()
+Game.sync()
 // // `sequelize.define` also returns the model
 // console.log(Game === sequelize.models.Game); // true
