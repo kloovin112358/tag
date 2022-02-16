@@ -10,6 +10,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import ListGroup from 'react-bootstrap/ListGroup';
 import { gsap } from "gsap";
+import Welcome from './components/Welcome'
 
 function App() {
 
@@ -26,7 +27,8 @@ function App() {
           <Navbar.Brand href="/" className="fw-bold text-light">T.A.G.</Navbar.Brand>
         </Container>
       </Navbar>
-      <Container>
+      <Welcome />
+      {/* <Container>
         <div className="pt-3 pb-5">
           <Row>
             <Col lg={10}>
@@ -50,7 +52,7 @@ function App() {
 
           </Row>
         </div>
-      </Container>
+      </Container> */}
     </>
   );
 }
