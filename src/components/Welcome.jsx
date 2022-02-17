@@ -3,6 +3,7 @@ import Button from 'react-bootstrap/Button'
 import React, { useEffect, useRef } from 'react';
 import Fade from 'react-reveal/Fade';
 import Bounce from 'react-reveal/Bounce';
+import {Link} from 'react-router-dom';
 
 function Welcome() {
     return (
@@ -26,9 +27,11 @@ function Welcome() {
                     <Fade left delay={4500}>
                         <p className="display-6 text-primary"><span className="fw-bold text-danger">NBA</span>: <span className="fw-bold">N</span>ice <span className="fw-bold">B</span>ison and <span className="fw-bold">A</span>ntelopes?</p>
                     </Fade>
+                    <Link to="/">
                     <Fade delay={6500} duration={2000}>
                         <Button variant="info" className="mt-4 text-white" size="lg">Begin</Button>
                     </Fade>
+                    </Link>
                 </div>
             </Container>
         </>

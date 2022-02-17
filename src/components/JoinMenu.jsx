@@ -1,22 +1,24 @@
 import Container from 'react-bootstrap/Container'
 import Card from 'react-bootstrap/Card'
 import Form from 'react-bootstrap/Form'
-import Nav from 'react-bootstrap/Nav'
 import Button from 'react-bootstrap/Button'
 import React, { useEffect, useRef } from 'react';
 import Fade from 'react-reveal/Fade';
+import {useNavigate} from 'react-router-dom';
 
 function JoinMenu() {
+    const navigate = useNavigate();
     function joinGame(e) {
         e.preventDefault()
-        console.log(e)
+        navigate('/52434')
+    }
+    function createGame(e) {
+        e.preventDefault();
     }
     return (
         <>
             <Container>
                 <div className="pb-5 pt-3">
-
-
                     <div className="row">
                         <div className="col-md">
                             <Fade duration={2500}>
@@ -37,7 +39,6 @@ function JoinMenu() {
                                             </Form.Group>
                                             <Button variant="danger" className="text-white" type="submit">Join</Button>
                                         </Form>
-
                                     </Card.Body>
                                 </Card>
                             </Fade>
@@ -49,7 +50,7 @@ function JoinMenu() {
                                 >
                                     <Card.Body>
                                         <p className="display-6">Create Game</p><hr></hr>
-                                        <Form>
+                                        <Form onSubmit={createGame}>
                                             <Form.Group controlId="nicknameNew" className="mb-3">
                                                 <Form.Label>Nickname</Form.Label>
                                                 <Form.Control type="text" placeholder="Ex: Jerry" maxLength={15} />
@@ -72,7 +73,7 @@ function JoinMenu() {
                                                 </Form.Text>
                                             </Form.Group>
                                         </Form>
-                                        <Button variant="primary" className="text-white">Create</Button>
+                                        <Button variant="primary" className="text-white" type="submit">Create</Button>
                                     </Card.Body>
                                 </Card>
                             </Fade>
