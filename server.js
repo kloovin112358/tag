@@ -21,6 +21,10 @@ const Game = sequelize.define('Game', {
       allowNull: false,
       primaryKey: true
     },
+    urlID :{
+      type: DataTypes.String,
+      allowNull: false,
+    },
     round_nums: {
       type: Sequelize.DataTypes.INTEGER,
       defaultValue: 2,

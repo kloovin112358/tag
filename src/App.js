@@ -5,7 +5,7 @@ import './App.scss';
 
 import Navbar from 'react-bootstrap/Navbar';
 import Container from 'react-bootstrap/Container';
-
+import { Routes, Route, BrowserRouter } from 'react-router-dom';
 
 import Welcome from './components/Welcome'
 import JoinMenu from './components/JoinMenu'
@@ -15,6 +15,7 @@ import GameScreen from './components/GameScreen';
 function App() {
   return (
     <>
+    <BrowserRouter>
       <Navbar bg="danger" variant="dark" style={{zIndex:'999'}}>
         <Container>
           <Navbar.Brand href="/" className="fw-bold text-light">The Acronym Game</Navbar.Brand>
@@ -61,9 +62,14 @@ function App() {
           detectRetina: true,
         }}
       />
-      <GameScreen />
-      {/* <JoinMenu /> */}
-      {/* <Welcome /> */}
+      <Routes>
+        <Route exact path="/" element={<JoinMenu/>}/>
+        <Route exact path="/welcome" element={<Welcome/>}/>
+        <Route exact path=":id" element={<GameScreen/>}/>
+        {/* <Route exact path="/credits" element={<CreditsScreen/>}/> */}
+        {/* Potential archive route, using ID here */}
+      </Routes>
+      </BrowserRouter>
     </>
   );
 }
