@@ -1,3 +1,5 @@
-# tag
+# The Acronym Game (T.A.G.)
 
-react
+A party game where you create fun alternatives for common acronyms.
+
+Built on [React](https://reactjs.org/).
