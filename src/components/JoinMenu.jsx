@@ -21,7 +21,7 @@ function JoinMenu() {
                 <div className="pb-5 pt-3">
                     <div className="row">
                         <div className="col-md">
-                            <Fade duration={2500}>
+                            {/* <Fade duration={2500}> */}
                                 <Card
                                     text="secondary"
                                 >
@@ -41,10 +41,10 @@ function JoinMenu() {
                                         </Form>
                                     </Card.Body>
                                 </Card>
-                            </Fade>
+                            {/* </Fade> */}
                         </div>
                         <div className="col-md mt-3 mt-md-0">
-                            <Fade duration={2500} delay={1000}>
+                            {/* <Fade duration={2500} delay={1000}> */}
                                 <Card
                                     text="secondary"
                                 >
@@ -76,7 +76,7 @@ function JoinMenu() {
                                         <Button variant="primary" className="text-white" type="submit">Create</Button>
                                     </Card.Body>
                                 </Card>
-                            </Fade>
+                            {/* </Fade> */}
                         </div>
 
                     </div>

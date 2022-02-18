@@ -12,7 +12,19 @@ import JoinMenu from './components/JoinMenu'
 import Particles from "react-tsparticles";
 import GameScreen from './components/GameScreen';
 
+import socketIOClient from "socket.io-client";
+const ENDPOINT = "http://127.0.0.1:5000";
+
 function App() {
+  const [response, setResponse] = useState("");
+
+  useEffect(() => {
+    const socket = socketIOClient(ENDPOINT);
+    socket.on("FromAPI", data => {
+      setResponse(data);
+    });
+  }, []);
+
   return (
     <>
     <BrowserRouter>
