@@ -23,6 +23,7 @@
     "sequelize-auto-migrations": "^1.0.3",
     "socket.io": "^4.4.1",
     "socket.io-client": "^4.4.1",
+    "universal-cookie": "^4.0.4",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

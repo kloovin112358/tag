@@ -13,15 +13,27 @@ import Particles from "react-tsparticles";
 import GameScreen from './components/GameScreen';
 
 import socketIOClient from "socket.io-client";
+
+import Cookies from 'universal-cookie';
+
 const ENDPOINT = "http://127.0.0.1:5000";
 
 function App() {
+  const cookies = new Cookies();
   const [response, setResponse] = useState("");
 
   useEffect(() => {
     const socket = socketIOClient(ENDPOINT);
-    socket.on("FromAPI", data => {
-      setResponse(data);
+
+    socket.on("areExistingUser", data => {
+
+      // if they are returning, we want to get their socket ID
+      if (cookies.get('socketID')) {
+        var socketID = cookies.get('socketID')
+      } else {
+        var socketID = null
+      }
+      socket.emit('amIExistingUser', socketID)
     });
   }, []);
 

@@ -5,9 +5,13 @@ import Button from 'react-bootstrap/Button'
 import React, { useEffect, useRef } from 'react';
 import Fade from 'react-reveal/Fade';
 import {useNavigate} from 'react-router-dom';
+import Cookies from 'universal-cookie';
 
 function JoinMenu() {
+
     const navigate = useNavigate();
+    const cookies = new Cookies();
+
     function joinGame(e) {
         e.preventDefault()
         navigate('/52434')
@@ -15,6 +19,15 @@ function JoinMenu() {
     function createGame(e) {
         e.preventDefault();
     }
+
+    // redirect to welcome page if they are a new user
+    useEffect(() => {
+        if (!cookies.get('returningUser')) {
+            cookies.set('returningUser', true, {path: '/'})
+            navigate('/welcome')
+        }
+    }, []);
+
     return (
         <>
             <Container>
