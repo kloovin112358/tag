@@ -25,16 +25,14 @@ function App() {
   useEffect(() => {
     const socket = socketIOClient(ENDPOINT);
 
-    socket.on("areExistingUser", data => {
+    // if the client is returning, we want to send over their existing socket ID
+    socket.emit('oldSocketIDTransfer', cookies.get('socketID'))
 
-      // if they are returning, we want to get their socket ID
-      if (cookies.get('socketID')) {
-        var socketID = cookies.get('socketID')
-      } else {
-        var socketID = null
-      }
-      socket.emit('amIExistingUser', socketID)
+    socket.on("newSocketIDTransfer", data => {
+      // after connection, the socket ID will be set as a cookie with expiration after 4 hours
+      cookies.set('socketID', data, { path: '/', maxAge: 4 * 60 * 60 })
     });
+
   }, []);
 
   return (

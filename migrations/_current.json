@@ -1,9 +1,0 @@
-{
-    "tables": {
-        "Games": {
-            "tableName": "Games",
-            "indexes": []
-        }
-    },
-    "revision": 1
-}
