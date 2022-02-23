@@ -5,6 +5,7 @@ import Button from 'react-bootstrap/Button'
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'universal-cookie';
+import Fade from 'react-reveal/Fade';
 
 function JoinMenu() {
 
@@ -43,6 +44,7 @@ function JoinMenu() {
                 <div className="pb-5 pt-3">
                     <div className="row">
                         <div className="col-md">
+                        <Fade>
                             <Card
                                 text="secondary"
                             >
@@ -62,10 +64,10 @@ function JoinMenu() {
                                     </Form>
                                 </Card.Body>
                             </Card>
-
+                        </Fade>
                         </div>
                         <div className="col-md mt-3 mt-md-0">
-
+                            <Fade>  
                             <Card
                                 text="secondary"
                             >
@@ -97,7 +99,7 @@ function JoinMenu() {
                                     <Button variant="primary" className="text-white" type="submit">Create</Button>
                                 </Card.Body>
                             </Card>
-
+                            </Fade>
                         </div>
 
                     </div>
