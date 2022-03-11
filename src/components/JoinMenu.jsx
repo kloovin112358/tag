@@ -31,6 +31,7 @@ function JoinMenu() {
     function createGame(e) {
         e.preventDefault();
         const form = e.currentTarget
+        //TODO verify that these are being sent properly
         socket.emit('createGame', {
             'round_nums': form.numRounds.value,
             'nickname': form.createNickname.value,

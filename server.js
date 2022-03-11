@@ -258,7 +258,7 @@ io.on('connection', (socket) => {
     (async () => {
 
       // query for the game instance
-      var gameInst = await Game.findAll({
+      var gameInst = await Game.findOne({
         limit: 1,
         where: {
           public_game: true
