@@ -13,11 +13,14 @@ function GameContent(props) {
             </Card.Body> */}
 
             {/* card-based for desktop screens */}
+            <Card.Header className="d-none d-lg-block text-center">
+                Select the best entry.
+            </Card.Header>
             <Card.Body className="d-none d-lg-block">
             <div className="d-flex flex-wrap align-items-start">
                 <Card 
                     className="shadow m-2 p-2 lead "
-                    style={{ width:'25%', maxWidth: '20rem', minWidth:'15rem' }}
+                    style={{ width:'20%', maxWidth: '20rem', minWidth:'15rem' }}
                 > 
                     <Card.Body>
                         High Troopers Meet Lemons
@@ -25,7 +28,7 @@ function GameContent(props) {
                 </Card>
                 <Card 
                     className="shadow m-2 p-2 lead"
-                    style={{ width:'25%', maxWidth: '20rem', minWidth:'15rem' }}
+                    style={{ width:'20%', maxWidth: '20rem', minWidth:'15rem' }}
                 > 
                     <Card.Body>
                         Merry Christmas, Big Guy
@@ -33,7 +36,15 @@ function GameContent(props) {
                 </Card>
                 <Card 
                     className="shadow m-2 p-2 lead"
-                    style={{ width:'25%', maxWidth: '20rem', minWidth:'15rem' }}
+                    style={{ width:'20%', maxWidth: '20rem', minWidth:'15rem' }}
+                > 
+                    <Card.Body>
+                        Potato Soup for the Soul
+                    </Card.Body>
+                </Card>
+                <Card 
+                    className="shadow m-2 p-2 lead"
+                    style={{ width:'20%', maxWidth: '20rem', minWidth:'15rem' }}
                 > 
                     <Card.Body>
                         Potato Soup for the Soul

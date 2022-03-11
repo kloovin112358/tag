@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useContext, useState, useRef } from 'react';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.scss';
@@ -11,7 +11,8 @@ import Welcome from './components/Welcome'
 import JoinMenu from './components/JoinMenu'
 import Particles from "react-tsparticles";
 import GameScreen from './components/GameScreen';
-
+// import SocketCookieSetup from './components/SocketCookieSetup';
+import {SocketContext, socket} from './socket';
 import socketIOClient from "socket.io-client";
 
 import Cookies from 'universal-cookie';
@@ -20,11 +21,10 @@ const ENDPOINT = "http://127.0.0.1:5000";
 
 function App() {
   const cookies = new Cookies();
-  const [response, setResponse] = useState("");
 
+  // in this top-level App component, we reference socket directly
+  // in lower-level components, we use socketContext
   useEffect(() => {
-    const socket = socketIOClient(ENDPOINT);
-
     // if the client is returning, we want to send over their existing socket ID
     socket.emit('oldSocketIDTransfer', cookies.get('socketID'))
 
@@ -33,10 +33,12 @@ function App() {
       cookies.set('socketID', data, { path: '/', maxAge: 4 * 60 * 60 })
     });
 
-  }, []);
+  }, [socket]);
 
   return (
     <>
+    <SocketContext.Provider value={socket}>
+      {/* <SocketCookieSetup /> */}
     <BrowserRouter>
       <Navbar bg="danger" variant="dark" style={{zIndex:'999'}}>
         <Container>
@@ -92,6 +94,7 @@ function App() {
         {/* Potential archive route, using ID here */}
       </Routes>
       </BrowserRouter>
+      </SocketContext.Provider>
     </>
   );
 }

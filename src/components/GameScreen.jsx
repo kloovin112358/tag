@@ -14,10 +14,10 @@ import Form from 'react-bootstrap/Form'
 import CircleLoader from "react-spinners/CircleLoader";
 
 function GameScreen(props) {
-    let [loading, setLoading] = useState(false);
+    let [loading, setLoading] = useState(true);
 
     const renderTooltip = () => (
-        <Tooltip id="button-tooltip">
+        <Tooltip>
           wagewge
         </Tooltip>
       );
