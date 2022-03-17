@@ -2,6 +2,7 @@ import Container from 'react-bootstrap/Container'
 import Card from 'react-bootstrap/Card'
 import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
+import Alert from 'react-bootstrap/Alert'
 import React, { useEffect, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'universal-cookie';
@@ -12,7 +13,12 @@ function JoinMenu() {
     const navigate = useNavigate();
     const cookies = new Cookies();
     const socket = useContext(SocketContext);
+    // provides feedback as to whether the game code is valid
     const [gameCodeInvalid, setGameCodeInvalid] = useState(false);
+    // gamecode is only used in the case that the random game button is used
+    const [gameCode, setGameCode] = useState(null)
+    // controls alert that there is no random game available
+    const [noRandomGame, setNoRandomGame] = useState(false);
 
     // for a user to join a random public game
     function joinRandom() {
@@ -50,11 +56,11 @@ function JoinMenu() {
         })
 
         socket.on('randomCodeFound', data => {
-            //TODO set url id in input field
+            setGameCode(data)
         })
 
         socket.on('noRandomCodeFound', () => {
-            //TODO - tooltip or something telling user none found
+            setNoRandomGame(true)
         })
 
     }, [socket]);
@@ -80,6 +86,11 @@ function JoinMenu() {
         <>
             <Container>
                 <div className="pb-5 pt-3">
+                    {noRandomGame ?
+                        <Alert variant="danger" onClose={() => setNoRandomGame(false)} dismissible>
+                            <Alert.Heading>Error: there were no public games available to join. Create a game to play.</Alert.Heading>
+                        </Alert> : null
+                    }
                     <div className="row">
                         <div className="col-md">
                             <Fade>
@@ -91,7 +102,7 @@ function JoinMenu() {
                                         <Form onSubmit={joinGame}>
                                             <Form.Group controlId="gameID" className="mb-3">
                                                 <Form.Label>Game ID</Form.Label>
-                                                <Form.Control required type="text" placeholder="Ex: 610841" name="urlId" maxLength={6} minLength={6} isInvalid={gameCodeInvalid} />
+                                                <Form.Control required type="text" placeholder="Ex: 610841" name="urlId" maxLength={6} minLength={6} isInvalid={gameCodeInvalid} value={gameCode} />
                                                 <Form.Control.Feedback type="invalid">
                                                     Error: game not found.
                                                 </Form.Control.Feedback>

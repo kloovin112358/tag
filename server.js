@@ -263,7 +263,8 @@ io.on('connection', (socket) => {
         where: {
           public_game: true
         },
-        order: Sequelize.literal('rand()')
+        // TODO-- get random order
+        // order: Sequelize.literal('rand()')
       })
 
       // if the game doesn't exist, tell the user
