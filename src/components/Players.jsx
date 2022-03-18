@@ -5,12 +5,22 @@ function Players(props) {
     return (
         <>
             <ListGroup variant="flush">
-            {props.players.map(player => {
-                return (<ListGroup.Item><Badge bg="info">{player[1]}</Badge> {player[0]}</ListGroup.Item>)
-            })}
-            {props.audience.map(member => {
-                return (<ListGroup.Item variant="secondary"><i>{member}</i></ListGroup.Item>)
-            })}
+                {
+                    props.players.map(player =>
+                        player[0] == 'P' ? (
+                            <ListGroup.Item>
+                                <Badge bg="info">{player[2]}</Badge> {player[1]}
+                            </ListGroup.Item>
+                        ) : null)
+                }
+                {
+                    props.players.map(player =>
+                        player[0] == 'A' ? (
+                            <ListGroup.Item variant="secondary">
+                                <i>{player[1]}</i>
+                            </ListGroup.Item>
+                        ) : null)
+                }
             </ListGroup>
         </>
     );

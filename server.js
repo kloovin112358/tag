@@ -44,6 +44,12 @@ const Game = sequelize.define('Game', {
     type: Sequelize.DataTypes.BOOLEAN,
     defaultValue: false,
     allowNull: false
+  },
+  // whether a game is complete or not
+  done: {
+    type: Sequelize.DataTypes.BOOLEAN,
+    defaultValue: false,
+    allowNull: false
   }
 });
 
@@ -64,10 +70,11 @@ const Player = sequelize.define('Player', {
     allowNull: false,
     defaultValue: 'P'
   },
+  // audience members won't need a score
   score: {
     type: Sequelize.DataTypes.INTEGER,
     defaultValue: 0,
-    allowNull: false
+    allowNull: true
   },
 })
 
@@ -210,13 +217,34 @@ async function joinGame(gameId, socketId, nickname) {
 
 io.on('connection', (socket) => {
 
+  // on connection, we want to send the socket ID
+  socket.emit("receiveSocketIDNewPlayer", socket.id)
+
   // client tells server whether they have a socket ID cookie
-  socket.on('oldSocketIDTransfer', function(data) { 
-    if (data) {
-      // TODO - check for existing game, push that data to client
-      // TODO - swap out game user's socket ID for the new one
-    }
-    socket.emit('newSocketIDTransfer', socket.id)
+  socket.on('oldSocketIDTransfer', function(data) {
+    (async () => {
+
+      // looking for active game
+      var playerInst = await Player.findOne({
+        where: {
+          socket_id: data
+        },
+        // include: [{
+        //   model: Game,
+        //   as: 'Game',
+        //   through: {where: {done: false}}
+        // }]
+      })
+
+      if (playerInst) {
+        playerInst.socket_id = socket.id
+        await playerInst.save()
+        socket.join(playerInst.GameId)
+      }
+      
+      socket.emit("receiveSocketID", socket.id)
+
+    })(); 
   })
 
   socket.on('joinGame', function(data) {
@@ -227,7 +255,8 @@ io.on('connection', (socket) => {
         limit: 1,
         where: {
           url_id: data.url_id
-        }
+        },
+        done: false
       })
 
       // if the game doesn't exist, tell the user
@@ -236,6 +265,7 @@ io.on('connection', (socket) => {
       // otherwise, join the game from client
       } else {
         await joinGame(gameInst.id, socket.id, data.nickname)
+        socket.join(gameInst.id)
         socket.emit('joinGameOnClient', gameInst.url_id)
       }
 
@@ -244,9 +274,9 @@ io.on('connection', (socket) => {
 
   socket.on('createGame', function(data) {
     (async () => {
-      // TODO pass in number of rounds and public boolean
       var gameInst = await createGame({'round_nums': data.round_nums, 'public_game': data.public_game})
-      // TODO change name from bill to a user input
+      // player joins socket room
+      socket.join(gameInst.id)
       await joinGame(gameInst.id, socket.id, data.nickname)
       // we want to return the game url name
       socket.emit('joinGameOnClient', gameInst.url_id)
@@ -263,6 +293,7 @@ io.on('connection', (socket) => {
         where: {
           public_game: true
         },
+        done: false
         // TODO-- get random order
         // order: Sequelize.literal('rand()')
       })
@@ -277,6 +308,34 @@ io.on('connection', (socket) => {
 
     })();
   })
+
+  socket.on('getPlayers', function(data) {
+    (async () => {
+      var gameInst = await Game.findOne({
+        where: {
+          url_id: data
+        }
+      })
+      // todo handle nonexistent game
+      if (gameInst) {
+        var players = await Player.findAll({
+          where: {
+            GameId: gameInst.id
+          }
+        })
+        var playersList = []
+        players.forEach(player => playersList.push([player.type, player.nickname, player.score]));
+        socket.emit("gotPlayers", playersList)
+      }
+    })();
+  })
+
+  // socket.on('disconnect', function() {
+  //   console.log('Got disconnect!');
+
+  //   var i = allClients.indexOf(socket);
+  //   delete allClients[i];
+  // });
   
 });
 

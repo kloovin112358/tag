@@ -4,8 +4,29 @@ import React, { useEffect, useRef } from 'react';
 import Fade from 'react-reveal/Fade';
 import Bounce from 'react-reveal/Bounce';
 import {Link} from 'react-router-dom';
+import { SocketContext } from '../socket';
+import Cookies from 'universal-cookie';
+import { useContext } from 'react';
 
 function Welcome() {
+    const socket = useContext(SocketContext);
+    const cookies = new Cookies();
+
+    // want to save the fact that the user has visited the site
+    function setReturningUserCookie(socketID) {
+        // cookie set to expire after 2 weeks
+        cookies.set('returningUser', socketID, { path: '/', maxAge: 14 * 24 * 60 * 60 })
+    }
+
+    useEffect(() => {
+
+        // here we will set the cookie with the user's socket id, marking them as a returning user
+        socket.on("receiveSocketIDNewPlayer", data => {
+            setReturningUserCookie(data)
+        });
+
+    }, [socket]);
+
     return (
         <>
             <Container>

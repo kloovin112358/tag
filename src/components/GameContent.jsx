@@ -19,7 +19,7 @@ function GameContent(props) {
             <Card.Body className="d-none d-lg-block">
             <div className="d-flex flex-wrap align-items-start">
                 <Card 
-                    className="shadow m-2 p-2 lead "
+                    className="shadow m-2 p-2"
                     style={{ width:'20%', maxWidth: '20rem', minWidth:'15rem' }}
                 > 
                     <Card.Body>
@@ -27,7 +27,7 @@ function GameContent(props) {
                     </Card.Body>
                 </Card>
                 <Card 
-                    className="shadow m-2 p-2 lead"
+                    className="shadow m-2 p-2"
                     style={{ width:'20%', maxWidth: '20rem', minWidth:'15rem' }}
                 > 
                     <Card.Body>
@@ -35,7 +35,7 @@ function GameContent(props) {
                     </Card.Body>
                 </Card>
                 <Card 
-                    className="shadow m-2 p-2 lead"
+                    className="shadow m-2 p-2"
                     style={{ width:'20%', maxWidth: '20rem', minWidth:'15rem' }}
                 > 
                     <Card.Body>
@@ -43,7 +43,7 @@ function GameContent(props) {
                     </Card.Body>
                 </Card>
                 <Card 
-                    className="shadow m-2 p-2 lead"
+                    className="shadow m-2 p-2"
                     style={{ width:'20%', maxWidth: '20rem', minWidth:'15rem' }}
                 > 
                     <Card.Body>

@@ -10,6 +10,7 @@ import Fade from 'react-reveal/Fade';
 import { SocketContext } from '../socket';
 
 function JoinMenu() {
+    
     const navigate = useNavigate();
     const cookies = new Cookies();
     const socket = useContext(SocketContext);
@@ -63,22 +64,27 @@ function JoinMenu() {
             setNoRandomGame(true)
         })
 
+        socket.on('receiveSocketID', data => {
+            cookies.set('returningUser', data, { path: '/', maxAge: 14 * 24 * 60 * 60 })
+        })
+
     }, [socket]);
 
-    // want to save the fact that the user has visited the site
-    function setReturningUserCookie() {
-        // cookie set to expire after 2 weeks
-        cookies.set('returningUser', true, { path: '/', maxAge: 14 * 24 * 60 * 60 })
-    }
-
-    // redirect to welcome page if they are a new user
+    // on first page load
     useEffect(() => {
+
+        // three scenarios:
+        // 1) new user, needs to see welcome page
+        // 2) not a new user, not in a game
+        // 3) not a new user, in a game and should be sent into the game
+        
+        // 1)
         if (!cookies.get('returningUser')) {
-            setReturningUserCookie()
+            // redirect to welcome page if they are a new user
             navigate('/welcome')
+        // 2) and 3)
         } else {
-            // if they are existing, we still want to update the cookie expiration
-            setReturningUserCookie()
+            socket.emit('oldSocketIDTransfer', cookies.get('returningUser'))
         }
     }, []);
 

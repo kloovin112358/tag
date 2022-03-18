@@ -1,6 +1,6 @@
 import Container from 'react-bootstrap/Container'
 import Button from 'react-bootstrap/Button'
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import Fade from 'react-reveal/Fade';
 import Bounce from 'react-reveal/Bounce';
 import Card from 'react-bootstrap/Card';
@@ -12,26 +12,42 @@ import Players from './Players';
 import GameContent from './GameContent';
 import Form from 'react-bootstrap/Form'
 import CircleLoader from "react-spinners/CircleLoader";
+import { socket, SocketContext } from '../socket';
 
 function GameScreen(props) {
-    let [loading, setLoading] = useState(true);
+
+    const socket = useContext(SocketContext);
+    let [loading, setLoading] = useState(false);
+    const [players, setPlayers] = useState([]);
+    const gameUrlId = window.location.pathname.split('/')[1]
 
     const renderTooltip = () => (
         <Tooltip>
           wagewge
         </Tooltip>
       );
+    
+    useEffect(() => {
+        socket.on('gotPlayers', data => {
+            console.log('awefawefawef')
+            setPlayers(data)
+        })
+    }, [socket]);
 
-    const players = [
-        ['JerrySeinfield1', 1200],
-        ['Go', 1000],
-        ['Elaine', 900],
-        ['Kramer', 700],
-        ['Bob', 600]
-    ]
-    const audience = [
-        'BrianLauer'
-    ]
+    useEffect(() => {
+        console.log(gameUrlId)
+        socket.emit("getPlayers", gameUrlId)
+    }, []);
+
+    // players example:
+    // const players = [
+    //     ['P', 'JerrySeinfield1', 1200],
+    //     ['P', 'Go', 1000],
+    //     ['P', 'Elaine', 900],
+    //     ['A', 'Kramer', null],
+    //     ['A', 'Bob', null]
+    // ]
+
     const override = `
         display: block;
         margin: 0 auto;
@@ -55,6 +71,7 @@ function GameScreen(props) {
                                 <Card.Footer>
 
                                     <div className="d-flex justify-content-center">
+                                        {/* TODO overlay is broken */}
                                         <OverlayTrigger
                                             placement="bottom"
                                             delay={{ show: 250, hide: 400 }}
@@ -73,7 +90,6 @@ function GameScreen(props) {
                             <Card>
                                 <Players 
                                     players={players}
-                                    audience={audience}
                                 />
                             </Card>
                         </Col>
