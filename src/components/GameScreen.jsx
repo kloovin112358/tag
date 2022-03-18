@@ -29,13 +29,11 @@ function GameScreen(props) {
     
     useEffect(() => {
         socket.on('gotPlayers', data => {
-            console.log('awefawefawef')
             setPlayers(data)
         })
     }, [socket]);
 
     useEffect(() => {
-        console.log(gameUrlId)
         socket.emit("getPlayers", gameUrlId)
     }, []);
 
