@@ -10,7 +10,7 @@ import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import Welcome from './components/Welcome'
 import JoinMenu from './components/JoinMenu'
 import Particles from "react-tsparticles";
-import GameScreen from './components/GameScreen';
+import GameController from './components/GameController';
 // import SocketCookieSetup from './components/SocketCookieSetup';
 import {SocketContext, socket} from './socket';
 import socketIOClient from "socket.io-client";
@@ -89,7 +89,7 @@ function App() {
       <Routes>
         <Route exact path="/" element={<JoinMenu/>}/>
         <Route exact path="/welcome" element={<Welcome/>}/>
-        <Route exact path=":id" element={<GameScreen/>}/>
+        <Route exact path=":id" element={<GameController/>}/>
         {/* <Route exact path="/credits" element={<CreditsScreen/>}/> */}
         {/* Potential archive route, using ID here */}
       </Routes>

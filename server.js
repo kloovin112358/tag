@@ -3,6 +3,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 const http = require('http');
 const server = http.createServer(app);
+
 const io = require("socket.io")(server, {
   cors: {
     origin: "http://localhost:3000",
@@ -45,10 +46,13 @@ const Game = sequelize.define('Game', {
     defaultValue: false,
     allowNull: false
   },
-  // whether a game is complete or not
-  done: {
-    type: Sequelize.DataTypes.BOOLEAN,
-    defaultValue: false,
+  // three statuses of a game:
+  // 1) waiting for players ('W')
+  // 2) in progress ('I')
+  // 3) complete ('C')
+  status: {
+    type: Sequelize.DataTypes.STRING,
+    defaultValue: 'W',
     allowNull: false
   }
 });
@@ -97,6 +101,15 @@ const Round = sequelize.define('Round', {
     defaultValue: 'R',
     allowNull: false
   },
+  // there are three statuses:
+  // 1) not started ('N')
+  // 2) in progress ('I')
+  // 3) completed ('C')
+  status: {
+    type: Sequelize.DataTypes.STRING,
+    defaultValue: 'N',
+    allowNull: false
+  }
 });
 
 const RoundVotes = sequelize.define('RoundVotes', {
@@ -236,13 +249,15 @@ io.on('connection', (socket) => {
         // }]
       })
 
+      socket.emit("receiveSocketID", socket.id)
+
       if (playerInst) {
         playerInst.socket_id = socket.id
         await playerInst.save()
         socket.join(playerInst.GameId)
+        // TODO get game inst from player inst
+        // socket.emit('joinGameOnClient', gameInst.url_id)
       }
-      
-      socket.emit("receiveSocketID", socket.id)
 
     })(); 
   })
@@ -252,11 +267,12 @@ io.on('connection', (socket) => {
 
       // query for the game instance
       var gameInst = await Game.findOne({
-        limit: 1,
         where: {
-          url_id: data.url_id
+          [Sequelize.Op.and]: [
+            {url_id: data.url_id},
+            {status: 'W'}
+          ]
         },
-        done: false
       })
 
       // if the game doesn't exist, tell the user
@@ -283,17 +299,49 @@ io.on('connection', (socket) => {
     })();
   })
 
+  socket.on('checkValidGame', function(data) {
+    (async () => {
+      // there are two invalid game scenarios here:
+      // 1) game code doesn't exist
+      // 2) game has already ended
+      var gameInst = await Game.findOne({
+        where: {
+          [Sequelize.Op.and]: [
+            {url_id: data},
+            {status: {
+              [Sequelize.Op.ne]: 'C'
+            }}
+          ]
+        }
+      })
+      if (!gameInst) {
+        socket.emit('gameInvalid')
+      } else {
+        // if the game exists and is active, we have to send over the players
+        var players = await Player.findAll({
+          where: {
+            GameId: gameInst.id
+          }
+        })
+        var playersList = []
+        players.forEach(player => playersList.push([player.type, player.nickname, player.score]));
+        socket.emit('gameValid', playersList)
+      }
+    })();
+  })
+
   // getting a random public game for a player to join
   socket.on('getRandomCode', function() {
     (async () => {
 
       // query for the game instance
       var gameInst = await Game.findOne({
-        limit: 1,
         where: {
-          public_game: true
+          [Sequelize.Op.and]: [
+            {public_game: true},
+            {status: 'W'}
+          ]
         },
-        done: false
         // TODO-- get random order
         // order: Sequelize.literal('rand()')
       })
@@ -330,12 +378,10 @@ io.on('connection', (socket) => {
     })();
   })
 
-  // socket.on('disconnect', function() {
-  //   console.log('Got disconnect!');
+  socket.on('disconnect', function() {
+    // TODO if the user is in a lobby, they will be removed from the game
 
-  //   var i = allClients.indexOf(socket);
-  //   delete allClients[i];
-  // });
+  });
   
 });
 

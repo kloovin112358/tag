@@ -4,7 +4,7 @@ import Form from 'react-bootstrap/Form'
 import Button from 'react-bootstrap/Button'
 import Alert from 'react-bootstrap/Alert'
 import React, { useEffect, useContext, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 import Fade from 'react-reveal/Fade';
 import { SocketContext } from '../socket';
@@ -14,6 +14,9 @@ function JoinMenu() {
     const navigate = useNavigate();
     const cookies = new Cookies();
     const socket = useContext(SocketContext);
+    const [searchParams, setSearchParams] = useSearchParams();
+    // the url will have the search parameter ?gameInvalid=true if the user went to a link like /352352 and 352352 was not a valid game code
+    const [showGameInvalidWarning, setShowGameInvalidWarning] = useState(searchParams.get("gameInvalid"))
     // provides feedback as to whether the game code is valid
     const [gameCodeInvalid, setGameCodeInvalid] = useState(false);
     // gamecode is only used in the case that the random game button is used
@@ -92,6 +95,11 @@ function JoinMenu() {
         <>
             <Container>
                 <div className="pb-5 pt-3">
+                    {showGameInvalidWarning ?
+                        <Alert variant="danger" onClose={() => setShowGameInvalidWarning(false)} dismissible>
+                            <Alert.Heading>Error: game code invalid.</Alert.Heading>
+                        </Alert> : null
+                    }
                     {noRandomGame ?
                         <Alert variant="danger" onClose={() => setNoRandomGame(false)} dismissible>
                             <Alert.Heading>Error: there were no public games available to join. Create a game to play.</Alert.Heading>

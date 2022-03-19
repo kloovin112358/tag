@@ -33,9 +33,9 @@ function GameScreen(props) {
         })
     }, [socket]);
 
-    useEffect(() => {
-        socket.emit("getPlayers", gameUrlId)
-    }, []);
+    // useEffect(() => {
+    //     socket.emit("getPlayers", gameUrlId)
+    // }, []);
 
     // players example:
     // const players = [
@@ -51,11 +51,7 @@ function GameScreen(props) {
         margin: 0 auto;
         margin-top: 3rem;
     `;
-    if (loading) {
-        return (
-            <CircleLoader loading={loading} color={'#EF476F'} speedMultiplier={0.25} css={override} size={250}/>
-        )
-    }
+    
     return (
         <>
             <Container>
