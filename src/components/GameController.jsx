@@ -8,10 +8,14 @@ import { useNavigate } from 'react-router-dom';
 import ListGroup from 'react-bootstrap/ListGroup';
 import Badge from 'react-bootstrap/Badge';
 
+//TODO import GameScreen from './GameScreen';
+
 function GameController() {
 
     let [loading, setLoading] = useState(true);
     const [players, setPlayers] = useState([]);
+
+    //TODO track whether the user is the host
 
     const navigate = useNavigate();
     const socket = useContext(SocketContext);
@@ -29,8 +33,11 @@ function GameController() {
         socket.on('gameInvalid', () => {
             navigate('/?gameInvalid=true')
         })
+        socket.on('joinGamePrefill', () => {
+            navigate('/?gameCodePrefill=' + gameUrlId)
+        })
         // if the game is active and valid, we are sent over the players list
-        socket.on('gameValid', data => {
+        socket.on('updatePlayersList', data => {
             setPlayers(data)
         })
     }, [socket]);
@@ -43,21 +50,34 @@ function GameController() {
     if (loading) {
         return (
             <>
-            <CircleLoader loading={loading} color={'#EF476F'} speedMultiplier={0.25} css={loadingAnimCSSOverride} size={250}/>
-            {/* TODO make these more pretty */}
-            <ListGroup variant="flush">
-                {
-                    players.map(player => (
-                        <ListGroup.Item variant="secondary">
-                            <i>{player[1]}</i>
-                        </ListGroup.Item>
-                    ))
-                }
-            </ListGroup>
+                <p className="display-6 text-center text-muted mt-3">Game Code: <i className="fw-bold">{gameUrlId}</i></p>
+                <CircleLoader loading={loading} color={'#EF476F'} speedMultiplier={0.25} css={loadingAnimCSSOverride} size={250}/>
+                <div className="d-flex justify-content-center flex-wrap mt-5">
+                    {/* players up top */}
+                    
+                    {
+                        players.map(player => (
+                            player[0] === 'P' ? (
+                                <p className="display-4 mx-4 text-danger">{player[1]}</p>
+                            ) : null)
+                        )
+                    }
+                </div>
+                <div className="d-flex justify-content-center flex-wrap mt-3">
+                    {/* audience down here, smaller */}
+                    {
+                        players.map(player => (
+                            player[0] === 'A' ? (
+                                <p className="display-6 mx-4 fst-italic text-secondary">{player[1]}</p>
+                            ) : null)
+                        )
+                    }
+                </div>
             </>
         )
     }
 
+    // TODO actually render the game
     return (
         <>
         

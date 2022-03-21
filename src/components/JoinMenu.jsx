@@ -17,6 +17,8 @@ function JoinMenu() {
     const [searchParams, setSearchParams] = useSearchParams();
     // the url will have the search parameter ?gameInvalid=true if the user went to a link like /352352 and 352352 was not a valid game code
     const [showGameInvalidWarning, setShowGameInvalidWarning] = useState(searchParams.get("gameInvalid"))
+    // for the case where a user used a game URL that was valid but they were not in the game
+    const [showJoinGameMessage, setShowJoinGameMessage] = useState(searchParams.get("gameCodePrefill"))
     // provides feedback as to whether the game code is valid
     const [gameCodeInvalid, setGameCodeInvalid] = useState(false);
     // gamecode is only used in the case that the random game button is used
@@ -75,6 +77,10 @@ function JoinMenu() {
 
     // on first page load
     useEffect(() => {
+        
+        if (showJoinGameMessage) {
+            setGameCode(showJoinGameMessage)
+        }
 
         // three scenarios:
         // 1) new user, needs to see welcome page
@@ -103,6 +109,11 @@ function JoinMenu() {
                     {noRandomGame ?
                         <Alert variant="danger" onClose={() => setNoRandomGame(false)} dismissible>
                             <Alert.Heading>Error: there were no public games available to join. Create a game to play.</Alert.Heading>
+                        </Alert> : null
+                    }
+                    {showJoinGameMessage ?
+                        <Alert variant="info" onClose={() => setShowJoinGameMessage(false)} dismissible>
+                            <Alert.Heading>You navigated to an active game that you did not join. Provide a nickname and click "Join" to join this game.</Alert.Heading>
                         </Alert> : null
                     }
                     <div className="row">

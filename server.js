@@ -3,7 +3,6 @@ const app = express();
 const port = process.env.PORT || 5000;
 const http = require('http');
 const server = http.createServer(app);
-
 const io = require("socket.io")(server, {
   cors: {
     origin: "http://localhost:3000",
@@ -12,6 +11,7 @@ const io = require("socket.io")(server, {
 });
 
 const { Sequelize } = require('sequelize');
+const maxPlayersInGame = 3
 
 // Option 1: Passing a connection URI
 const sequelize = new Sequelize('postgres://postgres:password@localhost:5432/tag') // Example for postgres
@@ -80,6 +80,12 @@ const Player = sequelize.define('Player', {
     defaultValue: 0,
     allowNull: true
   },
+  // the host has control of navigation for the game
+  host: {
+    type: Sequelize.DataTypes.BOOLEAN,
+    defaultValue: false,
+    allowNull: false
+  }
 })
 
 const Round = sequelize.define('Round', {
@@ -217,18 +223,60 @@ async function createGame(gameOptions) {
   })
 }
 
-//TODO - check for number of players in game,
-// if there are over the allowed amount, join them as audience
-async function joinGame(gameId, socketId, nickname) {
-  return await Player.create({
-    socket_id: socketId,
-    nickname: nickname, 
-    GameId: gameId
+// this function checks if a legacy socket ID is
+// a player in a specific active game
+async function oldSocketID(socketID, gameID) {
+  return await Player.findOne({
+    where: {
+      [Sequelize.Op.and]: [
+        {GameId: gameID},
+        {socket_id: socketID}
+      ]
+    },
   })
 }
 
-
 io.on('connection', (socket) => {
+
+  // if there are over the allowed amount, join them as audience
+  async function joinGame(gameId, socketId, nickname, host = false) {
+
+    var numPlayers = await Player.count({
+      where: {
+        GameId: gameId
+      },
+    })
+
+    if (numPlayers >= maxPlayersInGame) {
+      var playerType = 'A'
+    } else {
+      var playerType = 'P'
+    }
+
+    socket.join(gameId)
+
+    var newPlayer = await Player.create({
+      socket_id: socketId,
+      nickname: nickname, 
+      GameId: gameId,
+      type: playerType,
+      host: host
+    })
+
+    // querying for all players in the game
+    var players = await Player.findAll({
+      where: {
+        GameId: gameId
+      }
+    })
+    var playersList = []
+    players.forEach(player => playersList.push([player.type, player.nickname, player.score]));
+
+    // update each screen with the current players
+    io.to(gameId).emit('updatePlayersList', playersList)
+
+    return newPlayer
+  }
 
   // on connection, we want to send the socket ID
   socket.emit("receiveSocketIDNewPlayer", socket.id)
@@ -281,7 +329,6 @@ io.on('connection', (socket) => {
       // otherwise, join the game from client
       } else {
         await joinGame(gameInst.id, socket.id, data.nickname)
-        socket.join(gameInst.id)
         socket.emit('joinGameOnClient', gameInst.url_id)
       }
 
@@ -293,7 +340,7 @@ io.on('connection', (socket) => {
       var gameInst = await createGame({'round_nums': data.round_nums, 'public_game': data.public_game})
       // player joins socket room
       socket.join(gameInst.id)
-      await joinGame(gameInst.id, socket.id, data.nickname)
+      await joinGame(gameInst.id, socket.id, data.nickname, true)
       // we want to return the game url name
       socket.emit('joinGameOnClient', gameInst.url_id)
     })();
@@ -317,15 +364,27 @@ io.on('connection', (socket) => {
       if (!gameInst) {
         socket.emit('gameInvalid')
       } else {
-        // if the game exists and is active, we have to send over the players
-        var players = await Player.findAll({
-          where: {
-            GameId: gameInst.id
-          }
-        })
-        var playersList = []
-        players.forEach(player => playersList.push([player.type, player.nickname, player.score]));
-        socket.emit('gameValid', playersList)
+        var playerInst = await oldSocketID(socket.id, gameInst.id)
+
+        // if the player is in the game, we just have to update their socket ID
+        if (playerInst) {
+          playerInst.socket_id = socket.id
+          await playerInst.save()
+          // we have to update their players in the waiting screen
+          var players = await Player.findAll({
+            where: {
+              GameId: gameInst.id
+            }
+          })
+          var playersList = []
+          players.forEach(player => playersList.push([player.type, player.nickname, player.score]));
+          // updating the specific client with the players
+          socket.emit('updatePlayersList', playersList)
+        // otherwise, we want them to redirect them to the join page with
+        // a message to input a username
+        } else {
+          socket.emit('joinGamePrefill')
+        }
       }
     })();
   })
@@ -357,26 +416,26 @@ io.on('connection', (socket) => {
     })();
   })
 
-  socket.on('getPlayers', function(data) {
-    (async () => {
-      var gameInst = await Game.findOne({
-        where: {
-          url_id: data
-        }
-      })
-      // todo handle nonexistent game
-      if (gameInst) {
-        var players = await Player.findAll({
-          where: {
-            GameId: gameInst.id
-          }
-        })
-        var playersList = []
-        players.forEach(player => playersList.push([player.type, player.nickname, player.score]));
-        socket.emit("gotPlayers", playersList)
-      }
-    })();
-  })
+  // socket.on('getPlayers', function(data) {
+  //   (async () => {
+  //     var gameInst = await Game.findOne({
+  //       where: {
+  //         url_id: data
+  //       }
+  //     })
+  //     // todo handle nonexistent game
+  //     if (gameInst) {
+  //       var players = await Player.findAll({
+  //         where: {
+  //           GameId: gameInst.id
+  //         }
+  //       })
+  //       var playersList = []
+  //       players.forEach(player => playersList.push([player.type, player.nickname, player.score]));
+  //       socket.emit("gotPlayers", playersList)
+  //     }
+  //   })();
+  // })
 
   socket.on('disconnect', function() {
     // TODO if the user is in a lobby, they will be removed from the game
