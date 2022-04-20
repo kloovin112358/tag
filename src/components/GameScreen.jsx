@@ -40,17 +40,11 @@ function GameScreen(props) {
     // players example:
     // const players = [
     //     ['P', 'JerrySeinfield1', 1200],
-    //     ['P', 'Go', 1000],
     //     ['P', 'Elaine', 900],
     //     ['A', 'Kramer', null],
     //     ['A', 'Bob', null]
     // ]
 
-    const override = `
-        display: block;
-        margin: 0 auto;
-        margin-top: 3rem;
-    `;
     
     return (
         <>

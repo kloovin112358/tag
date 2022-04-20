@@ -11,7 +11,7 @@ const io = require("socket.io")(server, {
 });
 
 const { Sequelize } = require('sequelize');
-const maxPlayersInGame = 3
+const maxPlayersInGame = 8
 
 // Option 1: Passing a connection URI
 const sequelize = new Sequelize('postgres://postgres:password@localhost:5432/tag') // Example for postgres
@@ -54,7 +54,7 @@ const Game = sequelize.define('Game', {
     type: Sequelize.DataTypes.STRING,
     defaultValue: 'W',
     allowNull: false
-  }
+  },
 });
 
 const Player = sequelize.define('Player', {
@@ -272,8 +272,14 @@ io.on('connection', (socket) => {
     var playersList = []
     players.forEach(player => playersList.push([player.type, player.nickname, player.score]));
 
+    var gameInst = await Game.findOne({
+      where: {
+        id: gameId
+      }
+    })
+
     // update each screen with the current players
-    io.to(gameId).emit('updatePlayersList', playersList)
+    io.to(gameId).emit('validGame', {'playersList': playersList, 'status': gameInst.status})
 
     return newPlayer
   }
@@ -378,8 +384,8 @@ io.on('connection', (socket) => {
           })
           var playersList = []
           players.forEach(player => playersList.push([player.type, player.nickname, player.score]));
-          // updating the specific client with the players
-          socket.emit('updatePlayersList', playersList)
+          // update each screen with the current players
+          io.to(gameInst.id).emit('validGame', {'playersList': playersList, 'status': gameInst.status, 'host': playerInst.host})
         // otherwise, we want them to redirect them to the join page with
         // a message to input a username
         } else {
@@ -412,6 +418,22 @@ io.on('connection', (socket) => {
       } else {
         socket.emit('randomCodeFound', gameInst.url_id)
       }
+
+    })();
+  })
+
+  socket.on('nextStage', function(data) {
+    (async () => {
+
+      // query for the game instance
+      var gameInst = await Game.findOne({
+        where: {
+          url_id: data
+        },
+      })
+
+      // now we can determine what stage the game is at,
+      // and where it needs to go
 
     })();
   })

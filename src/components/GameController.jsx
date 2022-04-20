@@ -3,29 +3,22 @@
 // gameplay starts with the waiting room and progresses through to the credits
 import { SocketContext } from '../socket';
 import { useContext, useState, useEffect } from 'react';
-import CircleLoader from "react-spinners/CircleLoader";
-import { useNavigate } from 'react-router-dom';
-import ListGroup from 'react-bootstrap/ListGroup';
-import Badge from 'react-bootstrap/Badge';
 
-//TODO import GameScreen from './GameScreen';
+import { useNavigate } from 'react-router-dom';
+
+import GameScreen from './GameScreen';
+import WaitingMenu from './WaitingMenu';
 
 function GameController() {
 
     let [loading, setLoading] = useState(true);
-    const [players, setPlayers] = useState([]);
-
-    //TODO track whether the user is the host
+    let [status, setStatus] = useState(null);
+    let [players, setPlayers] = useState([]);
+    let [host, setHost] = useState(true);
 
     const navigate = useNavigate();
     const socket = useContext(SocketContext);
     const gameUrlId = window.location.pathname.split('/')[1]
-
-    const loadingAnimCSSOverride = `
-        display: block;
-        margin: 0 auto;
-        margin-top: 3rem;
-    `;
 
     useEffect(() => {
         // if the game does not exist, redirect to join menu
@@ -36,10 +29,25 @@ function GameController() {
         socket.on('joinGamePrefill', () => {
             navigate('/?gameCodePrefill=' + gameUrlId)
         })
-        // if the game is active and valid, we are sent over the players list
+        // if the game is active and valid, we are sent over some game information to 
+        // set us up
+        socket.on('validGame', data => {
+            setPlayers(data.playersList)
+            setStatus(data.status)
+            setHost(data.host)
+        })
+
+        // updating the players in the game
         socket.on('updatePlayersList', data => {
             setPlayers(data)
         })
+
+        // here we have each of the stages of the game
+        // starts with the beginning of the game
+        socket.on('startGame', data => {
+            setLoading(false)
+        })
+
     }, [socket]);
 
     useEffect(() => {
@@ -49,40 +57,13 @@ function GameController() {
 
     if (loading) {
         return (
-            <>
-                <p className="display-6 text-center text-muted mt-3">Game Code: <i className="fw-bold">{gameUrlId}</i></p>
-                <CircleLoader loading={loading} color={'#EF476F'} speedMultiplier={0.25} css={loadingAnimCSSOverride} size={250}/>
-                <div className="d-flex justify-content-center flex-wrap mt-5">
-                    {/* players up top */}
-                    
-                    {
-                        players.map(player => (
-                            player[0] === 'P' ? (
-                                <p className="display-4 mx-4 text-danger">{player[1]}</p>
-                            ) : null)
-                        )
-                    }
-                </div>
-                <div className="d-flex justify-content-center flex-wrap mt-3">
-                    {/* audience down here, smaller */}
-                    {
-                        players.map(player => (
-                            player[0] === 'A' ? (
-                                <p className="display-6 mx-4 fst-italic text-secondary">{player[1]}</p>
-                            ) : null)
-                        )
-                    }
-                </div>
-            </>
+            <WaitingMenu loading={loading} players={players} gameUrlId={gameUrlId} host={host} status={status}/>
+        )
+    } else {
+        return (
+            <GameScreen />
         )
     }
-
-    // TODO actually render the game
-    return (
-        <>
-        
-        </>
-    )
 
 }
 
