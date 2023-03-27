@@ -54,7 +54,9 @@ function JoinMenu() {
     useEffect(() => {
 
         socket.on("joinGameOnClient", data => {
-            navigate(`/${data}`)
+            cookies.set('gameCode', data.gameCode, { path: '/', maxAge: 3 * 60 * 60 })
+            cookies.set('clientPlayerNickname', data.clientPlayerNickname, { path: '/', maxAge: 3 * 60 * 60 })
+            navigate(`/${data.gameCode}`)
         });
 
         socket.on("gameNotFound", () => {
@@ -71,6 +73,7 @@ function JoinMenu() {
 
         socket.on('receiveSocketID', data => {
             cookies.set('returningUser', data, { path: '/', maxAge: 14 * 24 * 60 * 60 })
+            socket.emit('attemptToJoinGameFromCookie', {'gameCode': cookies.get('gameCode'), 'nickname': cookies.get('clientPlayerNickname')})
         })
 
     }, [socket]);

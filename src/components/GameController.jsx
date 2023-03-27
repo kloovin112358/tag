@@ -9,13 +9,18 @@ import { useNavigate } from 'react-router-dom';
 import GameScreen from './GameScreen';
 import WaitingMenu from './WaitingMenu';
 
+import Cookies from 'universal-cookie';
+
 function GameController() {
+
+    const cookies = new Cookies();
 
     let [loading, setLoading] = useState(true);
     let [status, setStatus] = useState(null);
     let [players, setPlayers] = useState([]);
     let [host, setHost] = useState(true);
 
+    const clientPlayerNickname = cookies.get('clientPlayerNickname');
     const navigate = useNavigate();
     const socket = useContext(SocketContext);
     const gameUrlId = window.location.pathname.split('/')[1]
@@ -57,7 +62,7 @@ function GameController() {
 
     if (loading) {
         return (
-            <WaitingMenu loading={loading} players={players} gameUrlId={gameUrlId} host={host} status={status}/>
+            <WaitingMenu loading={loading} players={players} gameUrlId={gameUrlId} host={host} status={status} clientPlayerNickname={clientPlayerNickname}/>
         )
     } else {
         return (

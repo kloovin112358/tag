@@ -236,7 +236,25 @@ async function oldSocketID(socketID, gameID) {
   })
 }
 
+async function findHostOfGame(gameInst) {
+  var playerInst = await Player.findOne({
+    where: {
+      [Sequelize.Op.and]: [
+        {GameId: gameInst.id},
+        {host: true}
+      ]
+    },
+  })
+  return playerInst.nickname
+}
+
 io.on('connection', (socket) => {
+
+  // update each waiting lobby screen with the player list
+  async function updateLobbyScreens(playersList, gameInst) {
+    // update each screen with the current players
+    io.to(gameInst.id).emit('validGame', {'playersList': playersList, 'status': gameInst.status, 'host': await findHostOfGame(gameInst)})
+  }
 
   // if there are over the allowed amount, join them as audience
   async function joinGame(gameId, socketId, nickname, host = false) {
@@ -278,8 +296,7 @@ io.on('connection', (socket) => {
       }
     })
 
-    // update each screen with the current players
-    io.to(gameId).emit('validGame', {'playersList': playersList, 'status': gameInst.status})
+    await updateLobbyScreens(playersList, gameInst)
 
     return newPlayer
   }
@@ -303,16 +320,35 @@ io.on('connection', (socket) => {
         // }]
       })
 
-      socket.emit("receiveSocketID", socket.id)
-
       if (playerInst) {
         playerInst.socket_id = socket.id
         await playerInst.save()
         socket.join(playerInst.GameId)
-        // TODO get game inst from player inst
-        // socket.emit('joinGameOnClient', gameInst.url_id)
       }
 
+      socket.emit("receiveSocketID", socket.id)
+      
+    })(); 
+  })
+
+  // if a player gets disconnected from a game, we want to 
+  // be able to return them to that game
+  socket.on('attemptToJoinGameFromCookie', function(data) {
+    (async () => {
+      // we only want to search for games that are "in progress" (if they want to rejoin a lobby, they'll just enter the code again)
+      if (data.gameCode) {
+        var gameInst = await Game.findOne({
+          where: {
+            [Sequelize.Op.and]: [
+              {url_id: data.gameCode},
+              {status: 'I'}
+            ]
+          },
+        })
+        if (gameInst) {
+          socket.emit('joinGameOnClient', {'gameCode': gameInst.url_id, 'clientPlayerNickname': data.nickname})
+        }
+      }
     })(); 
   })
 
@@ -335,7 +371,7 @@ io.on('connection', (socket) => {
       // otherwise, join the game from client
       } else {
         await joinGame(gameInst.id, socket.id, data.nickname)
-        socket.emit('joinGameOnClient', gameInst.url_id)
+        socket.emit('joinGameOnClient', {'gameCode': gameInst.url_id, 'clientPlayerNickname': data.nickname})
       }
 
     })();
@@ -348,7 +384,7 @@ io.on('connection', (socket) => {
       socket.join(gameInst.id)
       await joinGame(gameInst.id, socket.id, data.nickname, true)
       // we want to return the game url name
-      socket.emit('joinGameOnClient', gameInst.url_id)
+      socket.emit('joinGameOnClient', {'gameCode': gameInst.url_id, 'clientPlayerNickname': data.nickname})
     })();
   })
 
@@ -384,8 +420,9 @@ io.on('connection', (socket) => {
           })
           var playersList = []
           players.forEach(player => playersList.push([player.type, player.nickname, player.score]));
-          // update each screen with the current players
-          io.to(gameInst.id).emit('validGame', {'playersList': playersList, 'status': gameInst.status, 'host': playerInst.host})
+
+          await updateLobbyScreens(playersList, gameInst)
+
         // otherwise, we want them to redirect them to the join page with
         // a message to input a username
         } else {

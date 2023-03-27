@@ -26,6 +26,7 @@ function App() {
   // in lower-level components, we use socketContext
   useEffect(() => {
     // if the client is returning, we want to send over their existing socket ID
+    //TODO verify if this code actually does anything
     socket.emit('oldSocketIDTransfer', cookies.get('socketID'))
 
     socket.on("newSocketIDTransfer", data => {

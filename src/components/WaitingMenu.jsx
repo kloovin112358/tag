@@ -20,10 +20,7 @@ function WaitingMenu(props) {
     function nextStage() {
         // if the nextStage function serves to start the game, 
         // we need to make sure there are enough people in the game first
-        console.log(props.status)
-        console.log(props.players.length)
-        if (props.status === 'W' && props.players.length < 4) {
-            console.log("SAEFSSS")
+        if (props.status === 'W' && props.players.length < 3) {
             setShowMorePlayersWarning(true)
         } else {
             socket.emit("nextStage", props.gameUrlId)
@@ -43,7 +40,7 @@ function WaitingMenu(props) {
             }
             <p className="display-6 text-center text-secondary mt-3">Game Code: <i className="fw-bold">{props.gameUrlId}</i></p>
             {
-                props.host ? (
+                props.host == props.clientPlayerNickname ? (
                     <div className="text-center">
                         <Button variant="info" className="text-white" onClick={nextStage}>Start</Button>
                     </div>
