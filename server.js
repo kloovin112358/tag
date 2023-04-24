@@ -29,15 +29,11 @@ const Game = sequelize.define('Game', {
     allowNull: false,
     primaryKey: true
   },
+  // in the URL bar, to access the game
   url_id: {
     type: Sequelize.DataTypes.STRING,
     allowNull: false,
     defaultValue: createURLID()
-  },
-  round_nums: {
-    type: Sequelize.DataTypes.INTEGER,
-    defaultValue: 2,
-    allowNull: false
   },
   // a public game allows anyone to join, while private
   // restricts members to those given the join code
@@ -55,20 +51,90 @@ const Game = sequelize.define('Game', {
     defaultValue: 'W',
     allowNull: false
   },
+  //string, like "NANANANANAAA" where N is noun round, A is acronym round. Generated after game object creation, accessible by current_round index
+  round_seq_str: {
+    type: Sequelize.DataTypes.STRING,
+    allowNull: true
+  },
+  //nullable numeric field to access round_seq_str, 0 indexed
+  current_round: {
+    type: Sequelize.DataTypes.INTEGER,
+    defaultValue: 0,
+    allowNull: false
+  },
+  // Acronym round -> "WA" means writing. "VA1" means voting on first set. "DA1" means displaying authors of first set. "VA2", "DA2", "SA" means showing scores.
+  // Noun round -> "WN" means writing. "VN" means voting. "DN" means displaying authors, "SN" means showing scores 
+  round_status: {
+    type: Sequelize.DataTypes.STRING,
+    allowNull: true
+  },
+});
+
+const Round = sequelize.define('Round', {
+  id: {
+    type: Sequelize.DataTypes.UUID,
+    defaultValue: Sequelize.DataTypes.UUIDV4,
+    allowNull: false,
+    primaryKey: true
+  },
+  //TODO- figure out how to add game_id as a foreignkey
+  // which round in the round seq we are at
+  number: {
+    type: Sequelize.DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 1
+  },
+  // type has two choices, 'A' and 'N'
+  // 'A' denotes an acronym round, 'N' is a "noun" round
+  type: {
+    type: Sequelize.DataTypes.STRING,
+    defaultValue: 'A',
+    allowNull: false
+  },
+  // if acronym round, this is the first to display
+  acronym_round_acronym_1: {
+    type: Sequelize.DataTypes.STRING,
+    allowNull: true
+  },
+  // if acronym round, this is the second to display
+  acronym_round_acronym_2: {
+    type: Sequelize.DataTypes.STRING,
+    allowNull: true
+  },
+  // if noun round, this is the noun to display
+  noun_round_noun: {
+    type: Sequelize.DataTypes.STRING,
+    allowNull: true
+  },
 });
 
 const Player = sequelize.define('Player', {
+  id: {
+    type: Sequelize.DataTypes.UUID,
+    defaultValue: Sequelize.DataTypes.UUIDV4,
+    allowNull: false,
+    primaryKey: true
+  },
+  // TODO figure out how this connects to the game via PK
   socket_id: {
     type: Sequelize.DataTypes.STRING,
     allowNull: false,
-    primaryKey: true
   },
   nickname: {
     type: Sequelize.DataTypes.STRING,
     allowNull: false,
   },
-  // players have two types: Players and Audience,
-  // denoted by 'P' and 'A'
+  emoji: {
+    type: Sequelize.DataTypes.STRING,
+    allowNull: false,
+  },
+  // html color code for their vibe
+  color: {
+    type: Sequelize.DataTypes.STRING,
+    allowNull: false,
+  },
+  // players have three types: Players and Ghosts and Audience,
+  // denoted by 'P' and 'G' and 'A'
   type: {
     type: Sequelize.DataTypes.STRING,
     allowNull: false,
@@ -88,99 +154,68 @@ const Player = sequelize.define('Player', {
   }
 })
 
-const Round = sequelize.define('Round', {
-  id: {
-    type: Sequelize.DataTypes.UUID,
-    defaultValue: Sequelize.DataTypes.UUIDV4,
-    allowNull: false,
-    primaryKey: true
-  },
-  number: {
-    type: Sequelize.DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 1
-  },
-  // type has two choices, 'R' and 'T'
-  // 'R' denotes a regular round, 'T' is a "thing" round
-  type: {
-    type: Sequelize.DataTypes.STRING,
-    defaultValue: 'R',
-    allowNull: false
-  },
-  // there are three statuses:
-  // 1) not started ('N')
-  // 2) in progress ('I')
-  // 3) completed ('C')
-  status: {
-    type: Sequelize.DataTypes.STRING,
-    defaultValue: 'N',
-    allowNull: false
-  }
-});
-
-const RoundVotes = sequelize.define('RoundVotes', {
-  id: {
-    type: Sequelize.DataTypes.UUID,
-    defaultValue: Sequelize.DataTypes.UUIDV4,
-    allowNull: false,
-    primaryKey: true
-  },
-  // votes are the main way of scoring
-  votes_received: {
-    type: Sequelize.DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0
-  },
-  // emojis are an additional fun way of scoring --
-  // audience members and other players can give players
-  // emojis marking appreciation aside from votes
-  emojis_received: {
-    type: Sequelize.DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0
-  },
-});
-
-// regular rounds give a player an acronym and ask for them
+// Acronym round:
+// give a player an acronym and ask for them
 // to guess what it actually is, and also to provide
 // a funny spoof of what it could be
 // ex: acronym: NASA
-// guess: National Aeronautics and Space Administration
-// description: Not A Science Administration
-const RegularRoundInput = sequelize.define('RegularRoundInput', {
+// real expansion guess: National Aeronautics and Space Administration
+// funny expansion guess: Not A Science Administration
+
+// Noun round:
+// give them a noun and make them come up with 
+// a funny acronym and explanation of what it stands for
+// ex: noun: hamburger
+// acronym: CGW
+// expansion: Cows Gone Wild
+
+const RoundInput = sequelize.define('RegularRoundInput', {
   id: {
     type: Sequelize.DataTypes.UUID,
     defaultValue: Sequelize.DataTypes.UUIDV4,
     allowNull: false,
     primaryKey: true
   },
-  guess: {
-    type: Sequelize.DataTypes.STRING,
-    allowNull: false,
+  // TODO add round id FK
+  // TODO add player id FK
+  score: {
+    type: Sequelize.DataTypes.INTEGER,
+    defaultValue: 0,
+    allowNull: false
   },
-  description: {
+  // THESE ARE FOR ACRONYM ROUNDS ONLY
+  // |
+  // |
+  // v
+  funny_expansion_acronym_1: {
     type: Sequelize.DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
+  },
+  real_expansion_acronym_1: {
+    type: Sequelize.DataTypes.STRING,
+    allowNull: true,
+  },
+  funny_expansion_acronym_2: {
+    type: Sequelize.DataTypes.STRING,
+    allowNull: true,
+  },
+  real_expansion_acronym_2: {
+    type: Sequelize.DataTypes.STRING,
+    allowNull: true,
+  },
+  //THESE ARE FOR NOUN ROUNDS ONLY
+  // |
+  // |
+  // v
+  funny_acronym_noun: {
+    type: Sequelize.DataTypes.STRING,
+    allowNull: true,
+  },
+  funny_expansion_noun: {
+    type: Sequelize.DataTypes.STRING,
+    allowNull: true,
   },
 });
-
-// // thing rounds - TODO need to figure out what this is
-// const ThingRoundInput = sequelize.define('ThingRoundInput', {
-//   id: {
-//     type: Sequelize.DataTypes.UUID,
-//     defaultValue: Sequelize.DataTypes.UUIDV4,
-//     allowNull: false,
-//     primaryKey: true
-//   },
-//   guess: {
-//     type: Sequelize.DataTypes.STRING,
-//     allowNull: false,
-//   },
-//   description: {
-//     type: Sequelize.DataTypes.STRING,
-//     allowNull: false,
-//   },
-// });
 
 Player.belongsTo(Game)
 Round.belongsTo(Game)
