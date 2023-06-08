@@ -22,6 +22,27 @@ try {
     console.error('Unable to connect to the database:', error);
 }
 
+const Acronym = sequelize.define('Acronym', {
+  id: {
+    type: Sequelize.DataTypes.UUID,
+    defaultValue: Sequelize.DataTypes.UUIDV4,
+    allowNull: false,
+    primaryKey: true
+  },
+  acronym: {
+    type: Sequelize.DataTypes.STRING,
+    allowNull: false
+  },
+  expansion: {
+    type: Sequelize.DataTypes.STRING,
+    allowNull: false
+  },
+  category: {
+    type: Sequelize.DataTypes.STRING,
+    allowNull: false
+  },
+});
+
 const Game = sequelize.define('Game', {
   id: {
     type: Sequelize.DataTypes.UUID,
@@ -77,12 +98,11 @@ const Round = sequelize.define('Round', {
     allowNull: false,
     primaryKey: true
   },
-  //TODO- figure out how to add game_id as a foreignkey
   // which round in the round seq we are at
   number: {
     type: Sequelize.DataTypes.INTEGER,
     allowNull: false,
-    defaultValue: 1
+    defaultValue: 0
   },
   // type has two choices, 'A' and 'N'
   // 'A' denotes an acronym round, 'N' is a "noun" round
@@ -115,7 +135,6 @@ const Player = sequelize.define('Player', {
     allowNull: false,
     primaryKey: true
   },
-  // TODO figure out how this connects to the game via PK
   socket_id: {
     type: Sequelize.DataTypes.STRING,
     allowNull: false,
@@ -176,8 +195,6 @@ const RoundInput = sequelize.define('RegularRoundInput', {
     allowNull: false,
     primaryKey: true
   },
-  // TODO add round id FK
-  // TODO add player id FK
   score: {
     type: Sequelize.DataTypes.INTEGER,
     defaultValue: 0,
@@ -219,10 +236,8 @@ const RoundInput = sequelize.define('RegularRoundInput', {
 
 Player.belongsTo(Game)
 Round.belongsTo(Game)
-RoundVotes.belongsTo(Round)
-RoundVotes.belongsTo(Player)
-RegularRoundInput.hasOne(RoundVotes)
-
+RoundInput.belongsTo(Round)
+RoundInput.belongsTo(Player)
 
 // creates a 6-digit unqiue numeric game ID/code for the front-end
 // for the URL, like .../208131
@@ -235,15 +250,34 @@ function createURLID() {
 
 (async () => {
   await sequelize.sync({force: true});
-  // const testy = await Game.create({
-  //   round_nums: 5
-  // });
-  // const test_player = await Player.create({
-  //   nickname: 'Tom',
-  //   GameId: testy.id
-  // })
-  // console.log(testy.toJSON());
-  // console.log(test_player.toJSON())
+  const testGame = await Game.create({
+    round_seq_str: 'NANANANANANNANA'
+  });
+  const testRound = await Round.create({
+    GameId: testGame.id,
+    acronym_round_acronym_1: 'TL;DR',
+    acronym_round_acronym_2: 'PGA'
+  })
+  const testPlayer = await Player.create({
+    GameId: testGame.id,
+    socket_id: '23523_a3520938_a520987098',
+    nickname: 'Geoffrey',
+    emoji: '👨‍💼',
+    color: '#4169e1',
+  })
+  const testRoundInput = await RoundInput.create({
+    RoundId: testRound.id,
+    PlayerId: testPlayer.id,
+    score: 30,
+    funny_expansion_acronym_1: 'Too Long; Didnt Ride',
+    real_expansion_acronym_1: 'Too Long; didnt read',
+    funny_expansion_acronym_2: 'PowerPuff Girls Association',
+    real_expansion_acronym_2: 'Professional Golf Association',
+  })
+  console.log(testGame.toJSON());
+  console.log(testRound.toJSON())
+  console.log(testPlayer.toJSON())
+  console.log(testRoundInput.toJSON())
 })();
 
 app.get('/', (req, res) => {

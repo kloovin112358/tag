@@ -12,13 +12,14 @@ import Players from './Players';
 import GameContent from './GameContent';
 import Form from 'react-bootstrap/Form'
 import CircleLoader from "react-spinners/CircleLoader";
+import {dummyPlayers} from '../dummy';
 import { socket, SocketContext } from '../socket';
 
 function GameScreen(props) {
 
     const socket = useContext(SocketContext);
     let [loading, setLoading] = useState(false);
-    const [players, setPlayers] = useState([]);
+    const [players, setPlayers] = useState(dummyPlayers);
     const gameUrlId = window.location.pathname.split('/')[1]
 
     const renderTooltip = () => (
@@ -38,12 +39,6 @@ function GameScreen(props) {
     // }, []);
 
     // players example:
-    // const players = [
-    //     ['P', 'JerrySeinfield1', 1200],
-    //     ['P', 'Elaine', 900],
-    //     ['A', 'Kramer', null],
-    //     ['A', 'Bob', null]
-    // ]
 
     
     return (
@@ -75,11 +70,9 @@ function GameScreen(props) {
                             </Card>
                         </Col>
                         <Col className="mt-3 mt-xl-0">
-                            <Card>
-                                <Players 
-                                    players={players}
-                                />
-                            </Card>
+                            <Players 
+                                players={players}
+                            />
                         </Col>
 
                     </Row>

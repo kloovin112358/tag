@@ -88,9 +88,10 @@ function App() {
         }}
       />
       <Routes>
-        <Route exact path="/" element={<JoinMenu/>}/>
+        <Route exact path="/" element={<GameController/>}/>
         <Route exact path="/welcome" element={<Welcome/>}/>
         <Route exact path=":id" element={<GameController/>}/>
+        {/* <Route exact path="/" element={<JoinMenu/>}/> */}
         {/* <Route exact path="/credits" element={<CreditsScreen/>}/> */}
         {/* Potential archive route, using ID here */}
       </Routes>

@@ -28,12 +28,12 @@ function GameController() {
     useEffect(() => {
         // if the game does not exist, redirect to join menu
         // and give invalid game message
-        socket.on('gameInvalid', () => {
-            navigate('/?gameInvalid=true')
-        })
-        socket.on('joinGamePrefill', () => {
-            navigate('/?gameCodePrefill=' + gameUrlId)
-        })
+        // socket.on('gameInvalid', () => {
+        //     navigate('/?gameInvalid=true')
+        // })
+        // socket.on('joinGamePrefill', () => {
+        //     navigate('/?gameCodePrefill=' + gameUrlId)
+        // })
         // if the game is active and valid, we are sent over some game information to 
         // set us up
         socket.on('validGame', data => {
@@ -60,15 +60,20 @@ function GameController() {
         socket.emit("checkValidGame", gameUrlId)
     }, []);
 
-    if (loading) {
-        return (
-            <WaitingMenu loading={loading} players={players} gameUrlId={gameUrlId} host={host} status={status} clientPlayerNickname={clientPlayerNickname}/>
-        )
-    } else {
-        return (
-            <GameScreen />
-        )
-    }
+    return(
+        <GameScreen />
+    )
+    
+
+    // if (loading) {
+    //     return (
+    //         <WaitingMenu loading={loading} players={players} gameUrlId={gameUrlId} host={host} status={status} clientPlayerNickname={clientPlayerNickname}/>
+    //     )
+    // } else {
+    //     return (
+    //         <GameScreen />
+    //     )
+    // }
 
 }
 
