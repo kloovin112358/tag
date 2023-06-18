@@ -15,10 +15,12 @@ function Players(props) {
                                     className="d-flex justify-content-between align-items-center"
                                 >
                                     <div className="d-flex align-items-center">
-                                        <div style={{fontSize: '30px', justifyContent: 'center', display: 'flex', alignItems: 'center', backgroundColor:player.color, minHeight:'50px', maxHeight:'50px', height: '50px', minWidth: '50px', maxWidth: '50px', width: '50px', borderRadius: "50%"}}>{player.emoji}</div>
-                                        <h3 className="ms-3 h-100 mb-0">{player.nickname}</h3>
+                                        <div style={{fontSize: '25px', justifyContent: 'center', display: 'flex', alignItems: 'center', backgroundColor:player.color, minHeight:'42px', maxHeight:'42px', height: '42px', minWidth: '42px', maxWidth: '42px', width: '42px', borderRadius: "50%"}}>{player.emoji}</div>
+                                        <h5 className="ms-3 h-100 mb-0">{player.nickname}</h5>
                                     </div>
-                                    <Badge bg="info"><h3>{player.score}</h3></Badge> 
+                                    <div style={{fontSize: '25px'}} className="d-flex justify-content-center">
+                                        <Badge pill bg="info">{player.score}</Badge>
+                                    </div>
                                 </ListGroup.Item>
                             ) : null)
                     }

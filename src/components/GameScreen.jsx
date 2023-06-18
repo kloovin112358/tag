@@ -46,7 +46,7 @@ function GameScreen(props) {
             <Container>
                 <div className="pt-3 pb-5">
                     <Row>
-                        <Col xl={10}>
+                        <Col>
                             <Card>
                                 <GameContent 
 
@@ -69,10 +69,11 @@ function GameScreen(props) {
                                 </Card.Footer>
                             </Card>
                         </Col>
-                        <Col className="mt-3 mt-xl-0">
+                        <Col lg="auto">
+                            <div style={{width:'355px'}}>
                             <Players 
                                 players={players}
-                            />
+                            /></div>
                         </Col>
 
                     </Row>
